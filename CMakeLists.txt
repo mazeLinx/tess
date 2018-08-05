@@ -62,7 +62,7 @@ set(MINIMUM_LEPTONICA_VERSION 1.74)
 set(LIBRARY_TYPE SHARED)
 if (STATIC)
     set(LIBRARY_TYPE)
-endif()
+endif() 
 
 if (WIN32)
     if (MSVC)
@@ -176,6 +176,8 @@ include_directories(src/textord)
 include_directories(src/vs2010/port)
 include_directories(src/viewer)
 include_directories(src/wordrec)
+include_directories(src/ocr)
+include_directories(src/key)
 
 ########################################
 # LIBRARY tesseract
@@ -194,6 +196,7 @@ file(GLOB tesseract_src
     src/textord/*.cpp
     src/viewer/*.cpp
     src/wordrec/*.cpp
+    src/ocr/*.cpp
 )
 file(GLOB tesseract_hdr
     src/api/*.h
@@ -209,6 +212,8 @@ file(GLOB tesseract_hdr
     src/textord/*.h
     src/viewer/*.h
     src/wordrec/*.h
+    src/ocr/*.h
+    src/key/*.h
 )
 if (WIN32)
     file(GLOB tesseract_win32_src "src/vs2010/port/*.cpp")

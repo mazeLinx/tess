@@ -108,8 +108,8 @@ bool Tesseract::init_tesseract_lang_data(
   STRING tessdata_path = language_data_path_prefix + kTrainedDataSuffix;
   if (!mgr->is_loaded() && !mgr->Init(tessdata_path.string())) {
     tprintf("Error opening data file %s\n", tessdata_path.string());
-    tprintf("Please make sure the TESSDATA_PREFIX environment variable is set"
-            " to your \"tessdata\" directory.\n");
+    //tprintf("Please make sure the TESSDATA_PREFIX environment variable is set"
+    //        " to your \"tessdata\" directory.\n");
     return false;
   }
 #ifndef DISABLED_LEGACY_ENGINE
@@ -329,7 +329,7 @@ int Tesseract::init_tesseract(const char *arg0, const char *textbase,
 
       if (!loaded_primary) {
         if (result < 0) {
-          tprintf("Failed loading language '%s'\n", lang_str);
+          tprintf("Failed loading model '%s'\n", lang_str);
         } else {
           ParseLanguageString(tess_to_init->tessedit_load_sublangs.string(),
                               &langs_to_load, &langs_not_to_load);
@@ -337,7 +337,7 @@ int Tesseract::init_tesseract(const char *arg0, const char *textbase,
         }
       } else {
         if (result < 0) {
-          tprintf("Failed loading language '%s'\n", lang_str);
+          tprintf("Failed loading model '%s'\n", lang_str);
           delete tess_to_init;
         } else {
           sub_langs_.push_back(tess_to_init);
@@ -349,7 +349,7 @@ int Tesseract::init_tesseract(const char *arg0, const char *textbase,
     }
   }
   if (!loaded_primary) {
-    tprintf("Tesseract couldn't load any languages!\n");
+    tprintf("OCR couldn't load any model!\n");
     return -1;  // Couldn't load any language!
   }
 #ifndef DISABLED_LEGACY_ENGINE

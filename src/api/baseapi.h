@@ -35,6 +35,8 @@
 #include "thresholder.h"
 #include "unichar.h"
 
+#include "ocr_api.h"
+
 template <typename T> class GenericVector;
 class PAGE_RES;
 class PAGE_RES_IT;
@@ -102,7 +104,18 @@ class TESS_API TessBaseAPI {
  public:
   TessBaseAPI();
   virtual ~TessBaseAPI();
+  friend class OCR_API;
+  friend class TessTsvRenderer;
+  friend class TessPDFRenderer;
+  friend class TessHOcrRenderer;
+  friend class TessBoxTextRenderer;
+  friend class TessUnlvRenderer;
+  friend class TessTextRenderer;
+  friend class TessOsdRenderer;
 
+  friend static TBLOB *make_tesseract_blob(float baseline, float xheight, float descender, float ascender, bool numeric_mode, Pix* pix);
+
+private:
   /**
    * Returns the version identifier as a static string. Do not delete.
    */
