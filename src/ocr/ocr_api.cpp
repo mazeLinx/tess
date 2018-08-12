@@ -1,4 +1,4 @@
-#include "ocr_api.h"
+ï»¿#include "ocr_api.h"
 #include "baseapi.h"
 #include "allheaders.h"
 
@@ -29,35 +29,26 @@ using namespace std;
 static tesseract::TessBaseAPI *tapi = new tesseract::TessBaseAPI();
 
 
-// HID Key
-USHORT				m_u16HidKeyNum;
-T_HidKey_DeviceData	m_oHidKeyList[HIDKEY_NUM_MAX];
-T_HidKey_DeviceData m_oFocusHidKey;
 
-UCHAR				m_oStrUserKey[64] = "0987654321123456";
-UCHAR				m_oStrUserPass[64] = "0987654321123456";
-UCHAR				m_oStrDateCfg[64];
-UCHAR				m_oStrCurDate[64];
 
 
 // HID key interface
-// »ñÈ¡HIDKeyÁĞ±í
+// è·å–HIDKeyåˆ—è¡¨
 T_fsHidKey_GetDeviceList	m_fsHidKey_GetDeviceList;
-// ´ò¿ªHIDKey
+// æ‰“å¼€HIDKey
 T_fsHidKey_OpenDevice		m_fsHidKey_OpenDevice;
-// ¹Ø±ÕHIDKey
+// å…³é—­HIDKey
 T_fsHidKey_CloseDevice		m_fsHidKey_CloseDevice;
-// Ğ´Êı¾İµ½USBKey
+// å†™æ•°æ®åˆ°USBKey
 T_fsHidKey_SetData			m_fsHidKey_SetData;
-// ´ÓUSBKey»ñÈ¡Êı¾İ
+// ä»USBKeyè·å–æ•°æ®
 T_fsHidKey_GetData			m_fsHidKey_GetData;
-// AES¼ÓÃÜ
+// AESåŠ å¯†
 T_fsHidKey_Aes				m_fsHidKey_Aes;;
-// AES½âÃÜ
+// AESè§£å¯†
 T_fsHidKey_DeAes			m_fsHidKey_DeAes;
 HINSTANCE					m_hsHidKeyModule;
 BOOL						m_bsHidKeyInterfaceFlag;
-
 
 BOOL sHidKeyInterfaceInit(void);
 BOOL sHidKeyInterfaceFree(void);
@@ -114,8 +105,27 @@ BOOL sHidKeyInterfaceFree(void)
 	return TRUE;
 }
 
+//æ€è·¯ï¼šå…ˆéªŒè¯å¯†é’¥æ˜¯å¦ç›¸ç­‰ï¼Œç„¶åéªŒè¯æ—¶é—´æ˜¯å¦åœ¨æœ‰æ•ˆæœŸå†…
+//è¿”å›å€¼:
+// 0 : æ­£å¸¸
+// 1 : usbä¸å­˜åœ¨
+// 2 : usbkeyè§£ç å¤±è´¥
+// 3 : usbkeyå¯†ç éªŒè¯å¤±è´¥
+// 4 : usbkeyè¶…æœŸ 
+// 5 : åŠ¨æ€é“¾æ¥åº“ä¸å­˜åœ¨
+
 int VerifyKey()
 {
+	// HID Key
+	USHORT				m_u16HidKeyNum;
+	T_HidKey_DeviceData	m_oHidKeyList[HIDKEY_NUM_MAX];
+	T_HidKey_DeviceData m_oFocusHidKey;
+
+	UCHAR				m_oStrUserKey[64] = "0987654321123456";
+	UCHAR				m_oStrUserPass[64] = "0987654321123456";
+	UCHAR				m_oStrDateCfg[64];
+	UCHAR				m_oStrCurDate[64];
+
 	int nRet = 0;
 
 	BOOL bGetKeyFlag = sHidKeyInterfaceInit();
@@ -130,73 +140,74 @@ int VerifyKey()
 	UCHAR   tmp_u8CurDate[17];
 	UCHAR   tmp_u8DateCfg[33];
 	UCHAR	tmp_u8Date[33];
-	SYSTEMTIME	tmp_oCurTime; //ÏµÍ³Ê±¼ä
+	SYSTEMTIME	tmp_oCurTime; //ç³»ç»Ÿæ—¶é—´
 
 	if (FALSE == bGetKeyFlag) {
-		cout << "load dll false!\n" << endl;
+		nRet = 5;
+		//cout << "load dll false!\n" << endl;
 	}
 	else {
 		m_u16HidKeyNum = 0;
 		memset(&m_oFocusHidKey, 0, sizeof(T_HidKey_DeviceData));
 		m_u16HidKeyNum = m_fsHidKey_GetDeviceList(m_oHidKeyList, HIDKEY_NUM_MAX);
-		if (m_u16HidKeyNum > 0) {//Èç¹ûÓĞKeyÑéÖ¤ÃÜÂë
+		if (m_u16HidKeyNum > 0) {//å¦‚æœæœ‰KeyéªŒè¯å¯†ç 
 			memcpy(&m_oFocusHidKey, &m_oHidKeyList[0], sizeof(T_HidKey_DeviceData));
-			tmp_bRet = m_fsHidKey_OpenDevice(&m_oFocusHidKey); //´ò¿ªkey
+			tmp_bRet = m_fsHidKey_OpenDevice(&m_oFocusHidKey); //æ‰“å¼€key
 			if (tmp_bRet)
 			{
 				memset(tmp_u8Data, 0, 65);
-				//·¢ËÍÎÕÊÖĞÅÏ¢¸øusb
+				//å‘é€æ¡æ‰‹ä¿¡æ¯ç»™usb
 				tmp_u16OutBytes = m_fsHidKey_SetData(&m_oFocusHidKey,
 					eHidKey_DataType_Pass,
 					m_oStrUserPass,
-					64);										//ÊäÈëÃ÷ÎÄ
+					64);										//è¾“å…¥æ˜æ–‡
 
-																//»ñÈ¡¼ÓÃÜºó×Ö·û´®
+																//è·å–åŠ å¯†åå­—ç¬¦ä¸²
 				tmp_u16OutBytes = m_fsHidKey_GetData(&m_oFocusHidKey,
 					eHidKey_DataType_Pass,
 					tmp_u8Data,
-					64);										//»ñÈ¡ÃÜÎÄ
+					64);										//è·å–å¯†æ–‡
 
-				if (tmp_u16OutBytes > 0)						//ÑéÖ¤ÃÜÎÄ
+				if (tmp_u16OutBytes > 0)						//éªŒè¯å¯†æ–‡
 				{
 					tmp_lLen = strlen((const char*)m_oStrUserKey);
-					tmp_bRet = m_fsHidKey_DeAes(tmp_u8Data, tmp_u16OutBytes, m_oStrUserKey, tmp_lLen);	// Ê¹ÓÃÓÃ»§Key½«»ñÈ¡µ½µÄÊı¾İ½âÃÜ
-					if (FALSE == tmp_bRet) {//½âÂëÃÜÎÄ
+					tmp_bRet = m_fsHidKey_DeAes(tmp_u8Data, tmp_u16OutBytes, m_oStrUserKey, tmp_lLen);	// ä½¿ç”¨ç”¨æˆ·Keyå°†è·å–åˆ°çš„æ•°æ®è§£å¯†
+					if (FALSE == tmp_bRet) {//è§£ç å¯†æ–‡
 						nRet = 2;
-						cout << "key decoding fail!" << endl;
+						//cout << "key decoding fail!" << endl;
 					}
 					else {
-						if (0 == strcmp((const char*)tmp_u8Data, (const char*)m_oStrUserPass)) {//¶Ô±È½âÂëÃÜÎÄÓëÊäÈëÃÜÎÄÊÇ·ñÏàµÈ
+						if (0 == strcmp((const char*)tmp_u8Data, (const char*)m_oStrUserPass)) {//å¯¹æ¯”è§£ç å¯†æ–‡ä¸è¾“å…¥å¯†æ–‡æ˜¯å¦ç›¸ç­‰
 							tmp_bKeyFlag = TRUE;
-							cout << "key checking success!" << endl;
+							//cout << "key checking success!" << endl;
 						}
 						else {
 							tmp_bKeyFlag = FALSE;
 							nRet = 3;
-							cout << tmp_u8Data << "key checking fail!" << endl;
+							//cout << tmp_u8Data << "key checking fail!" << endl;
 						}
 					}
 
 				}
 
-				if (TRUE == tmp_bKeyFlag) {//ÑéÖ¤ÃÜÂëÕıÈ·ºóÑéÖ¤Ê±¼ä¶Ô²»¶Ô
+				if (TRUE == tmp_bKeyFlag) {//éªŒè¯å¯†ç æ­£ç¡®åéªŒè¯æ—¶é—´å¯¹ä¸å¯¹
 					memset(tmp_u8DateCfg, 0, 33);
-					m_fsHidKey_GetData(&m_oFocusHidKey, eHidKey_DataType_CurDate, tmp_u8DateCfg, 32); //»ñÈ¡Ê±¼äÓĞĞ§ÆÚ
+					m_fsHidKey_GetData(&m_oFocusHidKey, eHidKey_DataType_CurDate, tmp_u8DateCfg, 32); //è·å–æ—¶é—´æœ‰æ•ˆæœŸ
 					memset(tmp_u8CurDate, 0, 17);
-					m_fsHidKey_GetData(&m_oFocusHidKey, eHidKey_DataType_CurDate, tmp_u8CurDate, 16);    //»ñÈ¡ÉÏ´ÎÊ¹ÓÃµÄÊ±¼ä
+					m_fsHidKey_GetData(&m_oFocusHidKey, eHidKey_DataType_CurDate, tmp_u8CurDate, 16);    //è·å–ä¸Šæ¬¡ä½¿ç”¨çš„æ—¶é—´
 					GetLocalTime(&tmp_oCurTime);	// Get cur time
 
 					memset(tmp_u8Date, 0, 33);
 					sprintf_s((char *)(tmp_u8Date), 33, "%04d%02d%02d%04d%02d%02d",
 						tmp_oCurTime.wYear, tmp_oCurTime.wMonth, tmp_oCurTime.wDay,
 						tmp_oCurTime.wYear, tmp_oCurTime.wMonth, tmp_oCurTime.wDay);
-					cout << tmp_u8Date << " " << tmp_u8CurDate << endl;
-					if (strcmp((const char *)tmp_u8CurDate, (const char*)(tmp_u8Date)) <= 0) { //µ±Ç°Ê±¼ä±ÈÉÏ´ÎÊ¹ÓÃÊ±¼äÒª´ó
-						if (strcmp((const char *)tmp_u8DateCfg, (const char*)(tmp_u8Date)) < 0) { //µ±Ç°Ê±¼äÔÚÓĞĞ§ÆÚÄÚ
-																								  //ÉèÖÃÉÏ´ÎÊ¹ÓÃÊ±¼äÎªµ±Ç°Ê±¼ä
+					//cout << tmp_u8Date << " " << tmp_u8CurDate << endl;
+					if (strcmp((const char *)tmp_u8CurDate, (const char*)(tmp_u8Date)) <= 0) { //å½“å‰æ—¶é—´æ¯”ä¸Šæ¬¡ä½¿ç”¨æ—¶é—´è¦å¤§
+						if (strcmp((const char *)tmp_u8DateCfg, (const char*)(tmp_u8Date)) < 0) { //å½“å‰æ—¶é—´åœ¨æœ‰æ•ˆæœŸå†…
+																								  //è®¾ç½®ä¸Šæ¬¡ä½¿ç”¨æ—¶é—´ä¸ºå½“å‰æ—¶é—´
 							tmp_bDateFlag = TRUE;
 							//m_fsHidKey_SetData(&m_oFocusHidKey, eHidKey_DataType_CurDate, tmp_u8Date, 16);
-							cout << "date success!" << endl;
+							//cout << "date success!" << endl;
 						}
 						else {
 							nRet = 4;
@@ -208,25 +219,43 @@ int VerifyKey()
 			}
 			else {
 				nRet = 1;
-				cout << "error!" << endl;
+				//cout << "error!" << endl;
 			}
 
 		}
-		else {//Èç¹ûÃ»ÓĞkeyÖ±½ÓÍË³ö
+		else {//å¦‚æœæ²¡æœ‰keyç›´æ¥é€€å‡º
 			nRet = 1;
-			cout << "No key\n" << endl;
+			//cout << "No key\n" << endl;
 		}
 	}
 	sHidKeyInterfaceFree();
-
-	return 0;
+	return nRet;
 }
 
 
+int IsFileExists(char * file_path) {
+	ifstream fin(file_path);
+	if (!fin)
+		return 0;
+
+	fin.close();
+	return 1;
+}
+
+
+//è¿”å›å€¼:
+// 0 : æ­£å¸¸
+// 1 : usbä¸å­˜åœ¨
+// 2 : usbkeyè§£ç å¤±è´¥
+// 3 : usbkeyå¯†ç éªŒè¯å¤±è´¥
+// 4 : usbkeyè¶…æœŸ 
+// 5 : åŠ¨æ€é“¾æ¥åº“ä¸å­˜åœ¨
+// 6 : è¾“å…¥æˆ–è¾“å‡ºä¸å­˜åœ¨
 OCR_API::OCR_API(char * model_path) {
-	if (VerifyKey() != 0) {
+	status = VerifyKey();
+
+	if (status != 0) {
 		printf("Key Error\n");
-		getchar();
 		return;
 	}
 
@@ -249,9 +278,12 @@ void OCR_API::Init(char * model_path) {
 
 }
 
-void OCR_API::Say() {
+
+void OCR_API::CheckLib() {
 	cout << "hello ocr api" << endl;
 }
+
+
 
 
 void OCR_API::Ocr(char * img_path, char * file_path) {
@@ -284,9 +316,15 @@ void OCR_API::Ocr(char * img_path, char * file_path) {
 
 
 void OCR_API::Ocr2File(char * img_path, char * file_path) {
-	if (VerifyKey() != 0) {
+	status = VerifyKey();
+	if (status != 0) {
 		printf("Key Error\n");
-		getchar();
+		return;
+	}
+
+	if (IsFileExists(img_path) == 0 || IsFileExists(file_path) == 0) {
+		printf("File No Exists\n");
+		status = 6;
 		return;
 	}
 
@@ -308,8 +346,13 @@ void OCR_API::Ocr2File(char * img_path, char * file_path) {
 char * OCR_API::Ocr2Str(char * img_path) {
 	if (VerifyKey() != 0) {
 		printf("Key Error\n");
-		getchar();
-		return "";
+		return NULL;
+	}
+
+	if (IsFileExists(img_path) == 0) {
+		printf("Image No Exists\n");
+		status = 6;
+		return NULL;
 	}
 
 	auto pixs = pixRead(img_path);
