@@ -22,7 +22,7 @@
 
 #include "genericvector.h"
 
-static const char kTrainedDataSuffix[] = "traineddata";
+static const char kTrainedDataSuffix[] = "dll";
 
 // When adding new tessdata types and file suffixes, please make sure to
 // update TessdataType enum, kTessdataFileSuffixes and kTessdataFileIsText.

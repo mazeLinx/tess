@@ -242,6 +242,21 @@ int IsFileExists(char * file_path) {
 	return 1;
 }
 
+char * GetProgramDirA()
+{
+	int len = 1000;
+	char * path = new char[len];
+	GetModuleFileNameA(NULL, path, len);
+
+	string strPath = "";
+	strPath = (string)path;
+
+	int pos = strPath.find_last_of('\\', strPath.length());
+	std::strcpy(path, strPath.substr(0, pos).c_str());
+
+	return path;
+}
+
 
 //返回值:
 // 0 : 正常
@@ -251,7 +266,7 @@ int IsFileExists(char * file_path) {
 // 4 : usbkey超期 
 // 5 : 动态链接库不存在
 // 6 : 输入或输出不存在
-OCR_API::OCR_API(char * model_path) {
+OCR_API::OCR_API() {
 	status = VerifyKey();
 
 	if (status != 0) {
@@ -259,7 +274,7 @@ OCR_API::OCR_API(char * model_path) {
 		return;
 	}
 
-	Init(model_path);
+	Init();
 }
 
 OCR_API::~OCR_API() {
@@ -267,7 +282,9 @@ OCR_API::~OCR_API() {
 }
 
 
-void OCR_API::Init(char * model_path) {
+void OCR_API::Init() {
+
+	char * model_path = GetProgramDirA();
 
 	if (tapi->Init(model_path, "ita+ita_tra+usa")) {
 		std::cout << "Could not initialize ocr." << std::endl;

@@ -3,7 +3,7 @@
 
 class OCR_API {
 public:
-	OCR_API(char * model_path);
+	OCR_API();
 	virtual ~OCR_API();
 	void CheckLib();
 	
@@ -12,7 +12,7 @@ public:
 
 	//错误代码
 	// 0 : 正常
-	// 1 : usb不存在
+	// 1 : usb不存在	
 	// 2 : usbkey解码失败
 	// 3 : usbkey密码验证失败
 	// 4 : usbkey超期 
@@ -22,6 +22,6 @@ public:
 
 private:
 	void Ocr(char * img_path, char * file_path);
-	void Init(char * model_path);
+	void Init();
 
 };
